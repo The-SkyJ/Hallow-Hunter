@@ -92,7 +92,7 @@ class Reaper(pygame.sprite.Sprite):
         super().__init__()
         self.image = enemy_img
         self.rect = self.image.get_rect(
-            center=(random.randint(0, WIDTH), random.randint(0, HEIGHT))
+            center=(random.randint(500, WIDTH), random.randint(400, HEIGHT))
         )
         self.velocity = pygame.Vector2(random.uniform(-2, 2), random.uniform(-2, 2))
 
@@ -116,6 +116,10 @@ class Candy(pygame.sprite.Sprite):
             center=(random.randint(50, WIDTH - 50), random.randint(50, HEIGHT - 50))
         )
 
+def HandleRotation(value):
+    player.rotate(value)
+
+
 # --- Groups ---
 player = Player()
 player_group = pygame.sprite.Group(player)
@@ -131,6 +135,7 @@ for _ in range(3):
 # --- Game Variables ---
 score = 0
 game_over = False
+fire = False
 
 def draw_text(text, size, color, y):
     t = pygame.font.SysFont("chiller", size, bold=True).render(text, True, color)
@@ -160,6 +165,21 @@ while True:
                     candies.add(Candy())
                 score = 0
                 game_over = False
+        if event.type == pygame.JOYBUTTONDOWN:
+            if event.button == 3:
+                # restart
+                player = Player()
+                player_group = pygame.sprite.Group(player)
+                bullets.empty()
+                enemies.empty()
+                candies.empty()
+                for _ in range(8):
+                    enemies.add(Reaper())
+                for _ in range(3):
+                    candies.add(Candy())
+                score = 0
+                game_over = False
+
 
     if not game_over:
         # --- Controls ---
@@ -175,13 +195,22 @@ while True:
 
         if event.type == pygame.JOYAXISMOTION:
             if event.axis is 2:
-                player.rotate(event.value)
+                HandleRotation(event.value)
             if event.axis is 1:
                 if event.value < 0:
                     player.accelerate()
                 if event.value > 0:
                     player.accelerate()
-            print(event)
+            #print(event)
+        if event.type == pygame.JOYBUTTONDOWN:
+            if event.button is 5 and fire == False:
+                bullets.add(Bullet(player.rect.center, player.angle))
+                fire = True
+        if event.type == pygame.JOYBUTTONUP:
+            if event.button is 5:
+                fire = False
+
+
 
         # --- Update ---
         player_group.update()
