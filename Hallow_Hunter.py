@@ -1,5 +1,5 @@
 # --- Setup ---
-import pygame, random, math, sys
+import pygame, random, math, sys, os
 from pygame import JOYBUTTONDOWN
 
 pygame.init()
@@ -25,6 +25,7 @@ font = pygame.font.SysFont("chiller", 40, bold=True)
 background_img = pygame.image.load("Cornfield.png").convert()
 background_img = pygame.transform.scale(background_img, (WIDTH, HEIGHT))
 
+
 # Helper function for proportional scaling
 def scale_by_percent(image, percent):
     """Scale an image based on a percentage of the screen width."""
@@ -38,6 +39,8 @@ player_img = scale_by_percent(pygame.image.load("Hunter.png").convert_alpha(), 0
 enemy_img = scale_by_percent(pygame.image.load("Reaper.png").convert_alpha(), 0.045)   # 4.5% of width
 bullet_img = scale_by_percent(pygame.image.load("Bullet.png").convert_alpha(), 0.015)  # 1.5% of width
 candy_img = scale_by_percent(pygame.image.load("Candy.png").convert_alpha(), 0.03)     # 3% of width
+
+    
 
 # --- Player ---
 class Player(pygame.sprite.Sprite):
@@ -92,8 +95,12 @@ class Reaper(pygame.sprite.Sprite):
         super().__init__()
         self.image = enemy_img
         self.rect = self.image.get_rect(
-            center=(random.randint(500, WIDTH), random.randint(400, HEIGHT))
+            center=(random.randint(0, WIDTH), random.randint(0, HEIGHT))
         )
+        if self.rect.centerx > (WIDTH / 3) and self.rect.centerx < (WIDTH / 1.5):
+            self.rect.centerx = 900
+        if self.rect.centery > (HEIGHT / 1.5) and self.rect.centery < (HEIGHT / 3):
+            self.rect.centery = 700
         self.velocity = pygame.Vector2(random.uniform(-2, 2), random.uniform(-2, 2))
 
     def update(self):
@@ -152,7 +159,7 @@ while True:
         elif event.type == pygame.KEYDOWN:
             if not game_over and event.key == pygame.K_SPACE:
                 bullets.add(Bullet(player.rect.center, player.angle))
-            if game_over and event.key == pygame.K_r:
+            if event.key == pygame.K_r:
                 # restart
                 player = Player()
                 player_group = pygame.sprite.Group(player)
@@ -223,6 +230,7 @@ while True:
         score += len(hits) * 10
         for _ in range(len(hits)):
             enemies.add(Reaper())
+            
 
         # Player collides with enemies
         if pygame.sprite.spritecollideany(player, enemies):
